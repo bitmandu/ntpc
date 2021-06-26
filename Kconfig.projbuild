@@ -1,0 +1,15 @@
+menu "NTPC Configuration"
+
+    config NTPC_SERVER
+        string "NTP Server"
+        default "pool.ntp.org"
+        help
+            NTP server hostname.
+
+    config NTPC_SYNC_TIMEOUT
+        int "Initial time synchronization timeout (s)"
+        default 10
+        help
+            Number of seconds to wait for initial synchronization.
+
+endmenu
