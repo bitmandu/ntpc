@@ -4,6 +4,11 @@ This is an [ESP-IDF][1] component to synchronize time with a NTP
 server. It is based on the [ESP-IDF/examples/protocols/sntp][2]
 example.
 
+## Features
+
+* Time synchronization as you would expect
+* Converts clock values from deep sleep (from the RTC slow clock) to seconds
+
 ## Installation
 
 From the `components/` directory of your ESP-IDF project:
@@ -61,17 +66,17 @@ the time be synchronized.
 
 ## API
 
-### `nptc_init`
+### nptc_init()
 
 Initialize NTP client.
 
-	void nptc_init(void)
+    void nptc_init(void)
 
-### `ntpc_sync`
+### ntpc_sync()
 
 Synchronize time with NTP server.
 
-	bool ntpc_sync(uint32_t timeout)
+    bool ntpc_sync(uint32_t timeout)
 
 #### Parameters
 
@@ -80,6 +85,46 @@ Synchronize time with NTP server.
 #### Returns
 
 True if time is synchronized, false otherwise.
+
+### ntpc_rtctime()
+
+Convert RTC clock value to time in seconds
+
+    time_t ntpc_rtctime(uint64_t rtc_clk)
+
+#### Parameters
+
+- `rtc_clk`: RTC slow clock (ticks)
+
+#### Returns
+
+Time in seconds.
+
+## Time in Deep Sleep
+
+To determine the time of an event in deep sleep — for example,
+recorded by the [ESP32-S2 ULP-RISC-V coprocessor][4] — the RTC slow
+clock can be used.
+
+The following function, which would run on the ULP-RISC-V, returns the
+value of the RTC slow clock.
+
+    #include "ulp_riscv/ulp_riscv.h"
+    #include "ulp_riscv/ulp_riscv_utils.h"
+
+    static uint64_t read_slow_clock(void)
+    {
+        uint64_t now;
+
+        SET_PERI_REG_MASK(RTC_CNTL_TIME_UPDATE_REG, RTC_CNTL_TIME_UPDATE);
+        now = READ_PERI_REG(RTC_CNTL_TIME_LOW0_REG);
+        now |= ((uint64_t)READ_PERI_REG(RTC_CNTL_TIME_HIGH0_REG)) << 32;
+
+        return now;
+    }
+
+This component provides `ntpc_rtctime()` to convert these clock values
+to the time in seconds.
 
 ## Contributing
 
@@ -96,3 +141,4 @@ encouraged!
 [1]: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html
 [2]: https://github.com/espressif/esp-idf/tree/master/examples/protocols/sntp
 [3]: https://github.com/bitmandu/myfi
+[4]: https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/api-guides/ulp-risc-v.html
