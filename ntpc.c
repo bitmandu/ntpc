@@ -5,6 +5,7 @@
  */
 
 #include <stdbool.h>
+#include <time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -62,7 +63,7 @@ static void ntpc_sync_cb(struct timeval *tv)
     ESP_LOGI(TAG, "event: time update");
 }
 
-void ntpc_init(void)
+void ntpc_init(const char *timezone, int daylight)
 {
     time_t now;
     struct tm timeinfo;
@@ -85,6 +86,12 @@ void ntpc_init(void)
     if (timeinfo.tm_year < 100) {
         ESP_LOGI(TAG, "time is not set");
         ntpc_sync(CONFIG_NTPC_SYNC_TIMEOUT);
+    }
+
+    // set timezone
+    if (timezone) {
+	setenv("TZ", timezone, daylight);
+	tzset();
     }
 }
 

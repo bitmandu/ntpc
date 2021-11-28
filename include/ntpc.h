@@ -8,8 +8,12 @@
 
 /**
  * Initialize NTP client.
+ *
+ * @param timezone Timezone name
+ * @param daylight Daylight saving time flag
+ * @see man 3 tzset
  */
-void ntpc_init(void);
+void ntpc_init(const char *timezone, int daylight);
 
 /**
  * Synchronize time with NTP server.
